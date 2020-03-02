@@ -1,48 +1,51 @@
 FROM ubuntu:18.04
 
-RUN apt update && \
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install --assume-yes apt-utils
 
-apt install -y vim
+RUN apt-get install -y vim
 
-RUN apt install -y apache2
+RUN mkdir -p /app
 
-RUN service apache2 restart && \
+RUN apt-get install -y apache2
 
-a2enmod headers
+RUN a2enmod rewrite
+RUN a2enmod headers
+RUN a2enmod ssl
+RUN a2dismod -f autoindex
 
-RUN apache2ctl -S && \
+ADD set-apache.sh /app/set-apache.sh
+RUN /app/set-apache.sh
 
-sed -i 's/#AddDefaultCharset/AddDefaultCharset/' /etc/apache2/conf-available/charset.conf && \
-sed -i '8 s/\#//' /etc/apache2/conf-available/security.conf && \
-sed -i '9 s/\#//' /etc/apache2/conf-available/security.conf && \
-sed -i '10 s/\#//' /etc/apache2/conf-available/security.conf && \
-sed -i '11 s/\#//' /etc/apache2/conf-available/security.conf && \
-sed -i '25 s/OS/Prod/' /etc/apache2/conf-available/security.conf && \
-sed -i '63 s/\#//' /etc/apache2/conf-available/security.conf && \
-sed -i '70 s/\#//' /etc/apache2/conf-available/security.conf && \
+RUN a2ensite 000-default-ssl.conf
 
-RUN sed -i '10 i\ServerName localhost' /etc/apache2/sites-available/000-default.conf
-
-RUN a2ensite 000-default-ssl.conf && \
-service apache2 reload
-
-RUN apt install -y php
-RUN apt install -y php-mbstring php-gd php-curl php-xml php-bcmath php-oauth php-mysql composer
+RUN apt-get install -y php
+RUN apt-get install -y php-mbstring php-gd php-curl php-xml php-bcmath php-oauth php-mysql composer
 
 RUN sed -i 's/;date.timezone =/date.timezone = Asia\/Seoul/g' /etc/php/7.2/apache2/php.ini
 RUN sed -i 's/;date.timezone =/date.timezone = Asia\/Seoul/g' /etc/php/7.2/cli/php.ini
 
-RUN apt install -y mysql-client mysql-server
+RUN apt-get install -y mysql-client mysql-server
 
-#ADD 
+COPY override.cnf /etc/mysql/mysql.conf.d/override.cnf
 
-RUN apt install -y phpmyadmin && \
-echo "Include /etc/phpmyadmin/apache.conf" >> /etc/apache2/apache2.conf
+RUN apt-get install -y phpmyadmin
+RUN echo "Include /etc/phpmyadmin/apache.conf" >> /etc/apache2/apache2.conf
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-RUN sed -i '822 s/2/128/g' /etc/php/7.2/apache2/php.ini && \
-sed -i '669 s/8/512/g' /etc/php/7.2/apache2/php.ini && \
-sed -i '380 s/30/0/g' /etc/php/7.2/apache2/php.ini && \
-sed -i '390 s/60/-1/g' /etc/php/7.2/apache2/php.ini && \
-sed -i '401 s/128/512/g' /etc/php/7.2/apache2/php.ini && \
+ENV PHP_UPLOAD_MAX_FILESIZE 128M
+ENV PHP_POST_MAX_SIZE 512M
+ENV PHP_MAX_EXECUTION_TIME 0
+ENV PHP_MAX_INPUT_TIME -1
+ENV PHP_MEMORY_LIMIT 128M
 
-ENTRYPOINT ["/bin/bash"]
+ADD set-php-size.sh /app/set-php-size.sh
+RUN /app/set-php-size.sh
+
+ADD run.sh /app/run.sh
+
+VOLUME ["/opt/html", "/var/www/html"]
+
+EXPOSE 80
+
+CMD ["/app/run.sh", "run"]

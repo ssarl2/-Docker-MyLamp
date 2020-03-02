@@ -1,0 +1,9 @@
+[mysqld]
+character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
+
+query_cache_type = ON
+query_cache_limit = 4M
+query_cache_size = 64M
+
+sql_mode = NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
