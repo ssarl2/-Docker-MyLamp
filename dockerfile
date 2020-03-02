@@ -48,4 +48,4 @@ VOLUME ["/opt/html", "/var/www/html"]
 
 EXPOSE 80
 
-CMD ["/app/run.sh", "run"]
+CMD ["/app/run.sh"]
