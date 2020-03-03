@@ -42,6 +42,9 @@ ENV PHP_MEMORY_LIMIT 128M
 ADD set-php-size.sh /app/set-php-size.sh
 RUN /app/set-php-size.sh
 
+ADD set-mysql.sh /app/set-mysql.sh
+RUN /app/set-mysql.sh
+
 ADD run.sh /app/run.sh
 
 VOLUME ["/opt/html", "/var/www/html"]
