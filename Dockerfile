@@ -39,8 +39,10 @@ RUN echo "Include /etc/phpmyadmin/apache.conf" >> /etc/apache2/apache2.conf
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 ENV PHP_UPLOAD_MAX_FILESIZE 128M
+ENV PHP_POST_MAX_SIZE 512M
 ENV PHP_MAX_EXECUTION_TIME 0
 ENV PHP_MAX_INPUT_TIME -1
+ENV PHP_MEMORY_LIMIT 128M
 
 RUN /app/set-php-size.sh
 
