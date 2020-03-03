@@ -7,6 +7,12 @@ RUN apt-get install -y vim
 
 RUN mkdir -p /app
 
+ADD set-apache.sh /app/set-apache.sh
+ADD set-php-size.sh /app/set-php-size.sh
+ADD set-mysql.sh /app/set-mysql.sh
+ADD run.sh /app/run.sh
+RUN chmod +x /app/*.sh
+
 RUN apt-get install -y apache2
 
 RUN a2enmod rewrite
@@ -14,7 +20,6 @@ RUN a2enmod headers
 RUN a2enmod ssl
 RUN a2dismod -f autoindex
 
-ADD set-apache.sh /app/set-apache.sh
 RUN /app/set-apache.sh
 
 RUN a2ensite 000-default-ssl.conf
@@ -34,18 +39,12 @@ RUN echo "Include /etc/phpmyadmin/apache.conf" >> /etc/apache2/apache2.conf
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 ENV PHP_UPLOAD_MAX_FILESIZE 128M
-ENV PHP_POST_MAX_SIZE 512M
 ENV PHP_MAX_EXECUTION_TIME 0
 ENV PHP_MAX_INPUT_TIME -1
-ENV PHP_MEMORY_LIMIT 128M
 
-ADD set-php-size.sh /app/set-php-size.sh
 RUN /app/set-php-size.sh
 
-ADD set-mysql.sh /app/set-mysql.sh
 RUN /app/set-mysql.sh
-
-ADD run.sh /app/run.sh
 
 VOLUME ["/opt/html", "/var/www/html"]
 
